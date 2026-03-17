@@ -1,198 +1,183 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pradiptatama 26 Cinema - SMA N 1 Sleman</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pradiptatama 26 Cinema</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@300;400;600&display=swap');
         
-        :root {
-            --gold: #D4AF37;
-            --black: #0a0a0a;
-        }
+        :root { --gold: #D4AF37; --black: #0a0a0a; }
 
         body { 
             font-family: 'Inter', sans-serif; 
             background-color: var(--black); 
-            color: #ffffff; 
+            color: #ffffff;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .font-luxury { font-family: 'Playfair Display', serif; }
+        .text-gold { color: var(--gold); }
+        .bg-gold { background: linear-gradient(135deg, #D4AF37 0%, #F9E2AF 50%, #B8860B 100%); }
 
         .glass-card { 
-            background: rgba(20, 20, 20, 0.9); 
-            backdrop-filter: blur(12px); 
+            background: rgba(25, 25, 25, 0.95); 
+            backdrop-filter: blur(10px); 
             border: 1px solid rgba(212, 175, 55, 0.2); 
         }
 
-        .bg-gold { background: linear-gradient(135deg, #D4AF37 0%, #F9E2AF 50%, #B8860B 100%); }
-        .text-gold { color: var(--gold); }
-
-        input, select { 
-            background: rgba(255, 255, 255, 0.05) !important; 
-            border: 1px solid rgba(212, 175, 55, 0.3) !important; 
-            color: white !important; 
-        }
-
         .movie-card {
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1px solid rgba(212, 175, 55, 0.1);
             aspect-ratio: 2 / 3;
-            cursor: pointer;
-        }
-
-        .movie-card:hover {
-            transform: scale(1.03);
-            border-color: var(--gold);
+            transition: transform 0.2s;
         }
 
         .movie-card.selected {
             border: 3px solid var(--gold);
-            box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.5);
         }
 
-        .poster-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-        }
-        @media (min-width: 768px) {
-            .poster-grid { grid-template-columns: repeat(3, 1fr); gap: 20px; }
-        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: var(--gold); }
 
-        /* Modal Blur */
-        #movie-modal { backdrop-filter: blur(8px); }
+        /* Mencegah zoom otomatis pada input iOS */
+        input, select { font-size: 16px !important; }
     </style>
 </head>
-<body class="min-h-screen py-10 px-4">
+<body class="pb-20">
 
-    <div id="app" class="max-w-5xl mx-auto">
+    <header class="text-center py-10 px-4">
+        <img src="logo_sma1sleman.png" alt="Logo" class="w-20 mx-auto mb-4 drop-shadow-[0_0_10px_rgba(212,175,55,0.5)]">
+        <h1 class="text-3xl font-luxury text-gold font-bold">Pradiptatama 26 Cinema</h1>
+        <p class="text-[10px] tracking-[0.3em] uppercase text-slate-400">SMA Negeri 1 Sleman</p>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 space-y-10">
         
-        <div class="text-center mb-12">
-            <img src="logo_sma1sleman.png" alt="Logo" class="w-24 mx-auto mb-4">
-            <h1 class="text-4xl md:text-6xl font-luxury font-bold text-gold tracking-tight">Pradiptatama 26 Cinema</h1>
-            <p class="text-slate-400 mt-2 tracking-[0.2em] uppercase text-sm">SMA Negeri 1 Sleman</p>
-        </div>
+        <section id="movie-section">
+            <div class="flex justify-between items-end mb-4 border-b border-gold/20 pb-2">
+                <h2 class="font-luxury text-xl text-gold">Pilih Jadwal Film</h2>
+                <span id="selection-count" class="text-[10px] bg-gold text-black px-2 py-1 rounded-full font-bold uppercase">0 Terpilih</span>
+            </div>
+            
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3" id="poster-grid">
+                </div>
+        </section>
 
-        <div id="view-reservation" class="space-y-8">
-            <div class="glass-card p-6 md:p-10 rounded-3xl shadow-2xl">
-                <form id="reservationForm" class="space-y-12">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div class="space-y-2">
-                            <label class="text-[10px] uppercase tracking-widest text-gold font-bold">Nama Lengkap</label>
-                            <input type="text" id="reg-name" required class="w-full px-4 py-4 rounded-xl outline-none" placeholder="Contoh: Budi Santoso">
-                        </div>
-                        <div class="space-y-2">
-                            <label class="text-[10px] uppercase tracking-widest text-gold font-bold">Kelas / Guru</label>
-                            <select id="reg-class" required class="w-full px-4 py-4 rounded-xl outline-none">
-                                <option value="" disabled selected>Pilih Kelas/Jabatan</option>
-                                <optgroup label="Siswa">
-                                    <option>Kelas X</option><option>Kelas XI</option><option>Kelas XII</option>
-                                </optgroup>
-                                <optgroup label="Pendidik & Tamu">
-                                    <option>Guru</option>
-                                    <option>Staff</option>
-                                    <option>Tamu Undangan</option>
-                                </optgroup>
-                            </select>
-                        </div>
-                        <div class="space-y-2">
-                            <label class="text-[10px] uppercase tracking-widest text-gold font-bold">Nomor WhatsApp</label>
-                            <input type="tel" id="reg-phone" required class="w-full px-4 py-4 rounded-xl outline-none" placeholder="0812...">
-                        </div>
-                    </div>
+        <section id="registration-section" class="glass-card p-6 rounded-3xl shadow-2xl space-y-6 scroll-mt-10">
+            <div class="text-center">
+                <h2 class="font-luxury text-2xl text-gold">Data Penonton</h2>
+                <p class="text-xs text-slate-400">Silakan lengkapi data untuk tiket</p>
+            </div>
 
-                    <div class="space-y-6">
-                        <div class="flex justify-between items-end border-b border-gold/20 pb-2">
-                            <h3 class="text-xl font-luxury text-gold uppercase tracking-widest">Daftar Film</h3>
-                            <p id="selection-count" class="text-xs text-slate-400 italic font-bold">0 film terpilih</p>
-                        </div>
-                        <div class="poster-grid" id="poster-grid"></div>
-                    </div>
+            <form id="reservationForm" class="space-y-4">
+                <div class="space-y-1">
+                    <label class="text-[10px] uppercase tracking-widest text-gold font-bold ml-1">Nama Lengkap</label>
+                    <input type="text" id="reg-name" required class="w-full bg-white/5 border border-gold/30 px-4 py-3 rounded-xl focus:border-gold outline-none text-white" placeholder="Masukkan nama...">
+                </div>
 
-                    <button type="submit" id="btn-reserve" class="w-full bg-gold py-5 rounded-2xl font-bold text-black shadow-xl hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-3 text-lg uppercase tracking-widest">
-                        Konfirmasi Reservasi <i data-lucide="ticket" size="22"></i>
+                <div class="space-y-1">
+                    <label class="text-[10px] uppercase tracking-widest text-gold font-bold ml-1">Kelas / Jabatan</label>
+                    <select id="reg-class" required class="w-full bg-[#1a1a1a] border border-gold/30 px-4 py-3 rounded-xl outline-none text-white appearance-none">
+                        <option value="" disabled selected>Pilih Kelas/Guru</option>
+                        <optgroup label="Siswa">
+                            <option>Kelas X</option><option>Kelas XI</option><option>Kelas XII</option>
+                        </optgroup>
+                        <optgroup label="Pendidik & Staff">
+                            <option>Guru</option>
+                            <option>Staff</option>
+                            <option>Tamu Undangan</option>
+                        </optgroup>
+                    </select>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-[10px] uppercase tracking-widest text-gold font-bold ml-1">Nomor WhatsApp</label>
+                    <input type="tel" id="reg-phone" required class="w-full bg-white/5 border border-gold/30 px-4 py-3 rounded-xl outline-none text-white" placeholder="0812...">
+                </div>
+
+                <div class="pt-4">
+                    <button type="submit" id="btn-reserve" class="w-full bg-gold py-4 rounded-2xl font-bold text-black shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2 uppercase tracking-widest text-sm">
+                        Ambil Tiket Sekarang <i data-lucide="ticket" size="18"></i>
                     </button>
-                </form>
-            </div>
-        </div>
+                </div>
+            </form>
+        </section>
 
-        <div id="movie-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/80">
-            <div class="glass-card max-w-2xl w-full rounded-3xl overflow-hidden shadow-2xl border-gold/40">
-                <div class="flex flex-col md:flex-row">
-                    <img id="modal-img" class="w-full md:w-1/2 aspect-[2/3] object-cover">
-                    <div class="p-8 space-y-4 flex-1">
-                        <div class="flex justify-between items-start">
-                            <h2 id="modal-title" class="text-2xl font-luxury text-gold leading-tight"></h2>
-                            <button onclick="closeModal()" class="text-slate-400 hover:text-white"><i data-lucide="x"></i></button>
-                        </div>
-                        <p id="modal-time" class="text-sm font-bold text-white bg-gold/20 inline-block px-3 py-1 rounded-full border border-gold/30"></p>
-                        <div class="space-y-2">
-                            <h4 class="text-[10px] uppercase text-gold font-bold tracking-widest">Sinopsis</h4>
-                            <p id="modal-synopsis" class="text-sm text-slate-300 leading-relaxed"></p>
-                        </div>
-                        <button id="modal-select-btn" class="w-full bg-gold text-black font-bold py-3 rounded-xl mt-4 uppercase tracking-widest transition-all">
-                            Pilih Film Ini
-                        </button>
-                    </div>
+        <section id="view-ticket" class="hidden py-6">
+            <div id="ticket-capture" class="glass-card rounded-[2.5rem] overflow-hidden border border-gold/50 p-6 bg-[#0a0a0a]">
+                <div class="text-center border-b border-gold/20 pb-4 mb-4">
+                    <img src="logo_sma1sleman.png" class="w-12 mx-auto mb-2">
+                    <h2 class="text-xl font-luxury text-white">Cinema Pass</h2>
                 </div>
+                <div class="flex flex-wrap justify-center gap-2 py-2" id="ticket-poster-row"></div>
+                <div class="space-y-4 py-4 text-sm">
+                    <div class="grid grid-cols-2 gap-2">
+                        <div><p class="text-[8px] uppercase text-gold">Penonton</p><p id="disp-name" class="font-bold text-white uppercase"></p></div>
+                        <div><p class="text-[8px] uppercase text-gold">Kelas/Guru</p><p id="disp-class" class="font-bold text-white uppercase"></p></div>
+                    </div>
+                    <div><p class="text-[8px] uppercase text-gold">Film Terdaftar</p><p id="disp-movies" class="text-xs text-slate-300 leading-tight"></p></div>
+                </div>
+                <div class="mt-4 text-center text-[8px] text-gold/50 tracking-[0.3em] uppercase font-bold">SMA N 1 Sleman</div>
             </div>
-        </div>
-
-        <div id="view-ticket" class="hidden max-w-xl mx-auto py-10">
-            <div id="ticket-capture" class="glass-card rounded-[2rem] overflow-hidden border border-gold/50 p-8 bg-[#0a0a0a]">
-                <div class="text-center border-b border-gold/30 pb-6 mb-6">
-                    <img src="logo_sma1sleman.png" class="w-14 mx-auto mb-3">
-                    <h2 class="text-3xl font-luxury text-white">Pradiptatama 26 Cinema</h2>
-                    <p class="text-[9px] uppercase tracking-[0.3em] text-gold mt-1">Official Entry Pass</p>
-                </div>
-                <div class="flex flex-wrap justify-center gap-3 py-4" id="ticket-poster-row"></div>
-                <div class="space-y-5 py-6 border-y border-gold/10">
-                    <div class="grid grid-cols-2 gap-4">
-                        <div><p class="text-[9px] uppercase text-gold tracking-widest">Nama Penonton</p><p id="disp-name" class="font-bold text-white text-lg"></p></div>
-                        <div><p class="text-[9px] uppercase text-gold tracking-widest">Kelas / Instansi</p><p id="disp-class" class="font-bold text-white text-lg"></p></div>
-                    </div>
-                    <div>
-                        <p class="text-[9px] uppercase text-gold tracking-widest">Film Terdaftar</p>
-                        <p id="disp-movies" class="text-sm text-slate-300 mt-1 font-semibold"></p>
-                    </div>
-                </div>
-                <div class="mt-8 text-center">
-                    <p class="text-[10px] text-gold/60 uppercase tracking-[0.4em]">SMA NEGERI 1 SLEMAN</p>
-                </div>
-            </div>
-            <button onclick="downloadTicket()" class="w-full bg-gold mt-6 py-5 rounded-2xl font-bold text-black flex items-center justify-center gap-3 shadow-2xl">
-                <i data-lucide="download"></i> DOWNLOAD TIKET (.PNG)
+            <button onclick="downloadTicket()" class="w-full bg-gold mt-4 py-4 rounded-xl font-bold text-black flex items-center justify-center gap-2 text-sm">
+                <i data-lucide="download" size="18"></i> SIMPAN TIKET KE GALERI
             </button>
+        </section>
+    </main>
+
+    <div id="movie-modal" class="fixed inset-0 z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/90">
+        <div class="glass-card w-full max-w-lg rounded-t-[2rem] sm:rounded-[2rem] overflow-hidden animate-slide-up shadow-2xl border-gold/40">
+            <div class="relative">
+                <img id="modal-img" class="w-full h-64 object-cover">
+                <button onclick="closeModal()" class="absolute top-4 right-4 bg-black/50 text-white p-2 rounded-full"><i data-lucide="x"></i></button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div>
+                    <h2 id="modal-title" class="text-2xl font-luxury text-gold leading-tight"></h2>
+                    <p id="modal-time" class="text-[10px] font-bold text-white bg-gold/20 inline-block px-3 py-1 rounded-full border border-gold/30 mt-2"></p>
+                </div>
+                <div class="max-h-40 overflow-y-auto">
+                    <p id="modal-synopsis" class="text-xs text-slate-300 leading-relaxed italic"></p>
+                </div>
+                <button id="modal-select-btn" class="w-full bg-gold text-black font-bold py-4 rounded-xl uppercase tracking-widest text-sm shadow-xl">
+                    Pilih Film & Daftar
+                </button>
+            </div>
         </div>
+    </div>
+
+    <div id="floating-cta" class="fixed bottom-6 right-6 hidden">
+        <button onclick="scrollToRegistration()" class="bg-gold text-black p-4 rounded-full shadow-2xl flex items-center gap-2 font-bold animate-bounce">
+            <i data-lucide="arrow-down"></i> <span class="text-xs uppercase">Daftar</span>
+        </button>
     </div>
 
     <script>
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw8s_2p-oYoTyGwuAzs61-XpQpSSHifSUSEWOVqTTSymelrS3qNerafyWmvTl_H121RlQ/exec"; 
 
         const MOVIES = [
-            { id: 1, title: "Dia?", time: "09.10 – 09.25", poster: "dia.jpg", syn: "Seorang siswa kelas 3 SMA mulai berperilaku berbeda setelah dua minggu sebelumnya seorang adik kelas tersenyum kepadanya. Perubahan sikap itu memicu berbagai kejadian lucu dan canggung yang membawa nuansa ceria, komedi, sekaligus romansa remaja." },
-            { id: 2, title: "2/4 Kawan", time: "09.27 – 09.42", poster: "24kawan.jpg", syn: "Una, Ciya, Rafa, dan Bagas menjalin persahabatan sejak kelas 10 dengan penuh kebersamaan. Namun seiring waktu, pergaulan, konflik, dan kesibukan membuat hubungan mereka perlahan merenggang. Film ini menggambarkan dinamika persahabatan yang diuji oleh perubahan dan waktu." },
-            { id: 3, title: "The Sound of Us: Suara Kita", time: "09.44 – 09.59", poster: "soundofus.jpg", syn: "Sekelompok siswa SMA menghadapi tekanan menjelang kelulusan. Dafa dipaksa memilih jurusan yang tidak sesuai dengan mimpinya, Adit menghadapi kesulitan ekonomi, dan Abiyan tertekan oleh tuntutan orang tua. Konflik membuat mereka sempat berselisih, namun akhirnya mereka menyadari pentingnya saling mendukung untuk memperjuangkan masa depan." },
-            { id: 4, title: "Titik Tengah", time: "10.01 – 10.16", poster: "titiktengah.jpg", syn: "Tiga tipe siswa dengan pandangan berbeda—anak akademik, nonakademik, dan pemalas—memiliki tekanan yang sama menjelang ujian. Perbedaan cara berpikir memicu konflik dan kekacauan, hingga akhirnya mereka menyadari bahwa setiap sudut pandang memiliki nilai dan dapat saling melengkapi." },
-            { id: 5, title: "Diantara Kita", time: "10.18 – 10.33", poster: "diantarakita.jpg", syn: "Aluna dan Rafa adalah sahabat dekat sejak lama, namun Rafa diam-diam menyimpan perasaan terhadap Aluna. Kehadiran Narez, siswa lain yang juga menyukai Aluna, menimbulkan dilema dan konflik perasaan. Kisah ini menggambarkan hubungan persahabatan yang diuji oleh perasaan cinta." },
-            { id: 6, title: "Dua Sisi Kursi", time: "10.35 – 10.50", poster: "duasisikursi.jpg", syn: "Dua sahabat dekat menjadi renggang karena memilih jurusan yang sama dalam SNBP. Cella merasa dikhianati sementara Maira diliputi rasa iri. Di balik ambisi dan tekanan keluarga, mereka berusaha memahami arti persaingan, persahabatan, dan pilihan hidup." },
-            { id: 7, title: "Broken Symphony", time: "10.52 – 11.07", poster: "brokensymphony.jpg", syn: "Vivi, siswi yang dahulu dikenal memiliki suara emas, kehilangan kepercayaan diri setelah mengalami kegugupan saat penilaian bakat di sekolah. Ejekan dari teman-temannya membuatnya meragukan dirinya sendiri. Perjalanan Vivi menjadi proses emosional dalam menemukan kembali keberanian dan jati dirinya." },
-            { id: 8, title: "Hening di Tengah Suara", time: "11.09 – 11.24", poster: "heningdisuara.jpg", syn: "Seorang siswa yang pendiam ingin bersosialisasi seperti teman-temannya, tetapi sering diperlakukan buruk oleh beberapa orang di sekitarnya. Perlakuan tersebut membuatnya semakin takut untuk melawan dan mengekspresikan diri." },
-            { id: 9, title: "Irama Dua Nada", time: "11.26 – 11.41", poster: "iramaduanada.jpg", syn: "Kisah kakak dan adik yang memiliki minat serta pandangan berbeda dalam dunia seni. Perbedaan itu sering menimbulkan konflik, terutama ketika mereka harus bekerja sama mempersiapkan sebuah pertunjukan penting." },
-            { id: 10, title: "Melo Di Balik Panggung", time: "11.43 – 11.58", poster: "melodibalikpanggung.jpg", syn: "Seorang siswi harus menghadapi kesulitan ekonomi sehingga ia bekerja di sela-sela kesibukan sekolah. Di balik panggung kehidupannya, ia berusaha menyeimbangkan tanggung jawab keluarga, persahabatan, dan pendidikan." },
-            { id: 11, title: "Langkah Yang Salah", time: "12.30 – 12.45", poster: "langkahsalah.jpg", syn: "Seorang siswi yang memiliki minat besar dalam seni mendapatkan kesempatan mengikuti sebuah lomba. Namun berbagai kendala memaksanya mencari cara agar tetap bisa berpartisipasi, yang kemudian memunculkan konflik dalam perjalanan mengejar mimpinya." },
-            { id: 12, title: "Mungkin", time: "12.47 – 13.02", poster: "mungkin.jpg", syn: "Ayra dan Aisha adalah dua sahabat berprestasi yang selalu bersaing secara akademik. Di balik nilai tinggi dan harapan besar, tekanan perlahan menumpuk dan memunculkan pertanyaan tentang arti keberhasilan serta batas perjuangan demi memenuhi ekspektasi orang lain." },
-            { id: 13, title: "Derap Sunyi", time: "13.04 – 13.19", poster: "derapsunyi.jpg", syn: "Handy, siswa kelas 12, menghadapi tekanan sekolah dan ketidakpastian masa depan. Ketika ayahnya jatuh sakit dan meninggal, ia harus tumbuh lebih cepat, menjaga ibu dan adiknya sambil tetap berjuang menyelesaikan sekolah." },
-            { id: 14, title: "Meraih Cahaya di Atas Bayangan", time: "13.21 – 13.36", poster: "meraihcahaya.jpg", syn: "Seorang siswa yang dikenal sering membuat masalah mulai menyadari kesalahannya setelah mendapatkan secercah harapan dalam hidupnya. Kesadaran tersebut mendorongnya untuk berubah dan menjadi pribadi yang lebih baik." },
-            { id: 15, title: "Dari Rakyat Untuk Rakyat", time: "13.38 – 13.53", poster: "dariRakyat.jpg", syn: "Film ini menggambarkan konflik politik ketika seorang anggota DPR mengkhianati kepentingan rakyat. Di tengah situasi tersebut, muncul anggota baru bernama Tika yang memiliki visi berbeda dan berusaha memperjuangkan keadilan bagi masyarakat." },
-            { id: 16, title: "Terlena Dalam Waktu", time: "13.55 – 14.10", poster: "terlena.jpg", syn: "Seorang siswa lebih memilih bermain game online daripada mempersiapkan masa depannya. Ketika hasil ujian pentingnya buruk sementara teman-temannya berhasil meraih kampus impian, ia mulai menyadari kesalahan dan penyesalan atas waktu yang telah terbuang." },
-            { id: 17, title: "Isak Pertiwi", time: "14.12 – 14.27", poster: "isakpertiwi.jpg", syn: "Seorang pelajar SMA merasa gelisah melihat lingkungan sekitarnya yang semakin tidak terjaga. Ia ingin mengajak teman-temannya lebih peduli terhadap alam, namun keraguan dan rasa takut membuatnya ragu untuk menyuarakan kepeduliannya." },
-            { id: 18, title: "Melodi Untuk Ibu", time: "14.29 – 14.44", poster: "melodiuntukibu.jpg", syn: "Seorang gadis dari desa memiliki mimpi besar menjadi penyanyi. Meskipun menghadapi keterbatasan ekonomi, ia tetap berjuang dan tidak menyerah demi mewujudkan impiannya serta membanggakan ibunya." }
+            { id: 1, title: "Dia?", time: "09.10 – 09.25", poster: "dia.jpg", syn: "Seorang siswa kelas 3 SMA mulai berperilaku berbeda setelah dua minggu sebelumnya seorang adik kelas tersenyum kepadanya. Perubahan sikap itu memicu berbagai kejadian lucu dan canggung." },
+            { id: 2, title: "2/4 Kawan", time: "09.27 – 09.42", poster: "24kawan.jpg", syn: "Una, Ciya, Rafa, dan Bagas menjalin persahabatan sejak kelas 10. Namun seiring waktu, pergaulan dan kesibukan membuat hubungan mereka perlahan merenggang." },
+            { id: 3, title: "The Sound of Us", time: "09.44 – 09.59", poster: "soundofus.jpg", syn: "Sekelompok siswa SMA menghadapi tekanan menjelang kelulusan antara mimpi, ekonomi, dan tuntutan orang tua." },
+            { id: 4, title: "Titik Tengah", time: "10.01 – 10.16", poster: "titiktengah.jpg", syn: "Tiga tipe siswa—akademik, nonakademik, dan pemalas—menghadapi tekanan ujian dengan cara berbeda." },
+            { id: 5, title: "Diantara Kita", time: "10.18 – 10.33", poster: "diantarakita.jpg", syn: "Aluna dan Rafa adalah sahabat dekat, namun Rafa diam-diam menyimpan perasaan terhadap Aluna." },
+            { id: 6, title: "Dua Sisi Kursi", time: "10.35 – 10.50", poster: "duasisikursi.jpg", syn: "Dua sahabat dekat menjadi renggang karena memilih jurusan yang sama dalam SNBP." },
+            { id: 7, title: "Broken Symphony", time: "10.52 – 11.07", poster: "brokensymphony.jpg", syn: "Vivi kehilangan kepercayaan diri setelah gagal dalam tes bakat. Kisah tentang menemukan kembali keberanian diri." },
+            { id: 8, title: "Hening di Tengah Suara", time: "11.09 – 11.24", poster: "heningdisuara.jpg", syn: "Kisah siswa pendiam yang ingin bersosialisasi namun terhalang oleh perlakuan buruk sekitarnya." },
+            { id: 9, title: "Irama Dua Nada", time: "11.26 – 11.41", poster: "iramaduanada.jpg", syn: "Konflik kakak dan adik dengan minat seni berbeda saat harus bekerja sama dalam pertunjukan." },
+            { id: 10, title: "Melo Di Balik Panggung", time: "11.43 – 11.58", poster: "melodibalikpanggung.jpg", syn: "Seorang siswi berjuang menyeimbangkan antara ekonomi keluarga dan pendidikan." },
+            { id: 11, title: "Langkah Yang Salah", time: "12.30 – 12.45", poster: "langkahsalah.jpg", syn: "Kendala teknis dan emosional seorang siswi saat mengejar mimpi melalui lomba seni." },
+            { id: 12, title: "Mungkin", time: "12.47 – 13.02", poster: "mungkin.jpg", syn: "Persaingan akademik dua sahabat yang berujung pada pertanyaan tentang arti keberhasilan." },
+            { id: 13, title: "Derap Sunyi", time: "13.04 – 13.19", poster: "derapsunyi.jpg", syn: "Perjuangan Handy mengurus keluarga setelah ayahnya wafat di tengah tekanan sekolah." },
+            { id: 14, title: "Meraih Cahaya", time: "13.21 – 13.36", poster: "meraihcahaya.jpg", syn: "Siswa bermasalah yang mulai berubah setelah menemukan harapan dan tujuan hidup baru." },
+            { id: 15, title: "Dari Rakyat", time: "13.38 – 13.53", poster: "dariRakyat.jpg", syn: "Tika, seorang idealis, berjuang melawan ketidakadilan politik demi kepentingan masyarakat." },
+            { id: 16, title: "Terlena Dalam Waktu", time: "13.55 – 14.10", poster: "terlena.jpg", syn: "Penyesalan seorang siswa yang terlalu asyik bermain game hingga masa depannya terancam." },
+            { id: 17, title: "Isak Pertiwi", time: "14.12 – 14.27", poster: "isakpertiwi.jpg", syn: "Gelisah pelajar melihat alam yang rusak dan usahanya mengajak teman-teman peduli lingkungan." },
+            { id: 18, title: "Melodi Untuk Ibu", time: "14.29 – 14.44", poster: "melodiuntukibu.jpg", syn: "Gadis desa berjuang menjadi penyanyi demi membahagiakan ibunya meski dalam keterbatasan." }
         ];
 
         let selectedMovies = [];
@@ -200,10 +185,10 @@
         function renderPosterGrid() {
             const grid = document.getElementById('poster-grid');
             grid.innerHTML = MOVIES.map(movie => `
-                <div class="movie-card bg-neutral-900 rounded-2xl overflow-hidden relative group" onclick="openModal(${movie.id})" id="card-${movie.id}">
+                <div class="movie-card bg-neutral-900 rounded-2xl overflow-hidden relative shadow-lg" onclick="openModal(${movie.id})" id="card-${movie.id}">
                     <img src="${movie.poster}" class="w-full h-full object-cover">
-                    <div class="absolute bottom-0 w-full p-2 bg-black/70 backdrop-blur-md text-center">
-                        <p class="text-[10px] font-bold truncate text-white uppercase">${movie.title}</p>
+                    <div class="absolute bottom-0 w-full p-2 bg-black/80 backdrop-blur-sm">
+                        <p class="text-[9px] font-bold truncate text-white uppercase">${movie.title}</p>
                         <p class="text-[8px] text-gold font-bold">${movie.time}</p>
                     </div>
                 </div>
@@ -222,9 +207,15 @@
             
             const isSelected = selectedMovies.some(m => m.id === id);
             selectBtn.innerText = isSelected ? "BATALKAN PILIHAN" : "PILIH FILM INI";
-            selectBtn.className = isSelected ? "w-full bg-red-600 text-white font-bold py-3 rounded-xl mt-4 uppercase tracking-widest" : "w-full bg-gold text-black font-bold py-3 rounded-xl mt-4 uppercase tracking-widest";
+            selectBtn.className = isSelected ? "w-full bg-red-600 text-white font-bold py-4 rounded-xl uppercase text-sm" : "w-full bg-gold text-black font-bold py-4 rounded-xl uppercase text-sm";
             
-            selectBtn.onclick = () => { toggleSelect(id); closeModal(); };
+            selectBtn.onclick = () => { 
+                toggleSelect(id); 
+                closeModal();
+                if (!isSelected) {
+                    scrollToRegistration();
+                }
+            };
             modal.classList.remove('hidden');
         }
 
@@ -241,20 +232,26 @@
                 selectedMovies.push(MOVIES.find(m => m.id === id));
                 card.classList.add('selected');
             }
-            document.getElementById('selection-count').innerText = `${selectedMovies.length} film terpilih`;
+            
+            const count = selectedMovies.length;
+            document.getElementById('selection-count').innerText = `${count} Terpilih`;
+            document.getElementById('floating-cta').classList.toggle('hidden', count === 0);
+        }
+
+        function scrollToRegistration() {
+            document.getElementById('registration-section').scrollIntoView({ behavior: 'smooth' });
         }
 
         document.getElementById('reservationForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            if(selectedMovies.length === 0) return alert("Silakan pilih minimal 1 film untuk ditonton!");
+            if(selectedMovies.length === 0) return alert("Pilih film dulu di atas!");
 
             const btn = document.getElementById('btn-reserve');
             btn.disabled = true;
-            btn.innerHTML = `<span class="animate-pulse">MENGIRIM DATA...</span>`;
+            btn.innerText = "MENYIMPAN...";
 
             const payload = {
                 phase: 'RESERVE',
-                timestamp: new Date().toLocaleString(),
                 name: document.getElementById('reg-name').value,
                 class: document.getElementById('reg-class').value,
                 phone: document.getElementById('reg-phone').value,
@@ -263,25 +260,25 @@
 
             try {
                 await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
-            } catch(e) { console.error(e); }
+            } catch(e) {}
 
-            // Render Tiket
             document.getElementById('disp-name').innerText = payload.name;
             document.getElementById('disp-class').innerText = payload.class;
             document.getElementById('disp-movies').innerText = payload.movies;
-            document.getElementById('ticket-poster-row').innerHTML = selectedMovies.map(m => `<img src="${m.poster}" class="w-16 h-24 rounded-lg border border-gold/30 shadow-lg">`).join('');
+            document.getElementById('ticket-poster-row').innerHTML = selectedMovies.map(m => `<img src="${m.poster}" class="w-12 h-18 rounded-md border border-gold/30">`).join('');
             
-            document.getElementById('view-reservation').classList.add('hidden');
+            document.getElementById('movie-section').classList.add('hidden');
+            document.getElementById('registration-section').classList.add('hidden');
+            document.getElementById('floating-cta').classList.add('hidden');
             document.getElementById('view-ticket').classList.remove('hidden');
-            window.scrollTo(0, 0);
-            lucide.createIcons();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         });
 
         async function downloadTicket() {
             const ticket = document.getElementById('ticket-capture');
-            const canvas = await html2canvas(ticket, { backgroundColor: '#0a0a0a', scale: 2 });
+            const canvas = await html2canvas(ticket, { backgroundColor: '#0a0a0a', scale: 3 });
             const link = document.createElement('a');
-            link.download = `Tiket_Cinema26_${document.getElementById('disp-name').innerText}.png`;
+            link.download = `Tiket_Cinema26.png`;
             link.href = canvas.toDataURL();
             link.click();
         }
